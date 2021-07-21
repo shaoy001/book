@@ -1,0 +1,489 @@
+﻿<!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>图书增删改查</title>
+
+	<link href="resources/plugins/bootstrap-3.3.0/css/bootstrap.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/material-design-iconic-font-2.2.0/css/material-design-iconic-font.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/bootstrap-table-1.11.0/bootstrap-table.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/waves-0.7.5/waves.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/jquery-confirm/jquery-confirm.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/select2/css/select2.min.css" rel="stylesheet"/>
+
+	<link href="resources/css/common.css" rel="stylesheet"/>
+</head>
+<body ng-app="createBookApp" >
+<div id="main">
+	<div id="toolbar" >
+	 	<button class="btn btn-info btn-sm" style="background-color:#299e69" data-toggle="modal"  data-target="#addBookModal">添加图书</button>
+	 	<button class="btn btn-info  btn-sm" style="background-color:#299e69" data-toggle="modal"  onclick="return updateAction()" id="edit">编辑图书</button>
+	 	<button class="btn btn-info btn-sm" style="background-color:#299e69"  onclick="deleteAction()">删除图书</button>
+
+	</div>
+	<table id="table"></table>
+</div>
+<!-- 新增 -->
+ <form name="myForm" action="" class="form-horizontal" role="form"  ng-controller="myCtrl" id="form_data" >
+    <div class="modal fade" id="addBookModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                   	     图书信息
+                    </h4>
+                </div>
+                <div class="modal-body" style="padding:60px;">
+                  <input name="id"  ng-model="formData.name" type="hidden" class="form-control" id="bookId" >
+						<div class="form-group">
+							<label for="name">图书名称</label>
+							<input name="name"  ng-model="formData.name" type="text" class="form-control" id="name" required>
+						    <span style="color:red" ng-show="myForm.name.$dirty && myForm.name.$error.required">图书名称是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="author">作者</label>
+							<input name="author" ng-model="formData.author" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.author.$dirty && myForm.author.$error.required">作者是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="pub">出版社</label>
+							<input name="pub"  ng-model="formData.pub" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.pub.$dirty && myForm.pub.$error.required">出版社是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="type">图书类别</label>
+							<div style="margin-top:45px;font-size:14px;width:200px"><select name="type" id="bookType" ng-model="formData.type" class="form-control" required ></select></div>
+							<span style="color:red" ng-show="myForm.type.$dirty && myForm.type.$error.required">图书类别是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="stock">库存</label>
+							<input name="stock"  ng-model="formData.stock" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.stock.$dirty && myForm.stock.$error.required">库存是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="price">价格</label>
+							<input name="price"  ng-model="formData.price" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.price.$dirty && myForm.price.$error.required">价格是必须的。</span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" ng-click="addBook()" class="btn btn-primary"  ng-disabled="myForm.$invalid" id="add">提交 </button>
+                 		<button type="submit" ng-click="updateBook()" class="btn btn-primary" id="update" style="display:none">更新 </button>
+           		    </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+ </form>
+    
+ <!-- 新增 -->
+ <form name="borrrowForm" action="" class="form-horizontal" role="form"  ng-controller="borrowCtrl" id="form_data_borrow" >
+    <div class="modal fade" id="borrowBookModal" role="dialog" aria-labelledby="bookModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="bookModalLabel">
+                   	     图书借阅
+                    </h4>
+                </div>
+                <div class="modal-body" style="padding:60px;">
+                  <input name="id"  ng-model="formData.bookId" type="hidden" class="form-control" id="borrowBookId" >
+                   <input name="httpUrl"  ng-model="formData.httpUrl" type="hidden" class="form-control" id="borrowUrl" >
+                	    <div class="form-group">
+							<label for="userId">学生姓名</label>
+							<div style="margin-top:45px;font-size:14px;width:200px"><select id="userIds" name="userId" id="userNameSelect" ng-model="formData.userId" class="form-control" required ></select></div>
+							<span style="color:red" ng-show="borrrowForm.userId.$dirty && borrrowForm.userId.$error.required">学生姓名是必须的。</span>
+						</div>
+						<div class="form-group" id="timeDiv">
+							<label for="borrowTime">借书时间</label>
+							<input name="borrowTime"  ng-model="formData.borrowTime" type="text" class="form-control" id="borrrowTime" required>
+						    <span style="color:red" ng-show="borrrowForm.borrowTime.$dirty && borrrowForm.borrowTime.$error.required">借书时间是必须的。</span>
+						</div>
+					<div class="modal-footer" style="border-top:0px">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" ng-click="borrowBook()" class="btn btn-primary" >提交 </button>
+           		    </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+ </form>   
+ 
+<script src="resources/plugins/jquery.1.12.4.min.js"></script>
+<script src="resources/plugins/bootstrap-3.3.0/js/bootstrap.min.js"></script>
+<script src="resources/plugins/bootstrap-table-1.11.0/bootstrap-table.min.js"></script>
+<script src="resources/plugins/bootstrap-table-1.11.0/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="resources/plugins/waves-0.7.5/waves.min.js"></script>
+<script src="resources/plugins/jquery-confirm/jquery-confirm.min.js"></script>
+<script src="resources/plugins/select2/js/select2.min.js"></script>
+<script src="resources/js/common.js"></script>
+<script src="resources/plugins/angular/angular-1-4-1.js"></script>
+<script>
+$(function () {
+	$('#addBookModal').on('hide.bs.modal', function () {
+        location.reload();
+    })
+    $('#borrowBookModal').on('hide.bs.modal', function () {
+        location.reload();
+    })
+	var roleId = sessionStorage.getItem('roleId');
+	if(roleId == 1){
+		$("#toolbar").hide();
+	}else {
+		$("#toolbar").show();
+	}
+
+    $.ajax({
+        url: "/getBookTypes",
+        type: "get",
+        success:function(res){ 
+        	if (res && res.code === 0) {
+        		  $.each(res.data, function (infoIndex, info) {  //循环遍历后台传过来的json数据  
+                      $("#bookType").append("<option value='" + info["id"] + "'>" + info["typeName"] + "</option>");
+                  });
+
+            } else {
+            	 alert( res.message);
+            }
+        },
+        error:function()
+        {
+            alert('请求出错');
+        },
+        complete:function()
+        {
+            // $('#tips').hide();
+        }
+	});
+    
+    $.ajax({
+        url: "/getUsers",
+        type: "get",
+        success:function(res){ 
+        	if (res && res.code === 0) {
+        		  $.each(res.data, function (infoIndex, info) {  //循环遍历后台传过来的json数据  
+                      $("#userIds").append("<option value='" + info["id"] + "'>" + info["name"] + "</option>");
+                  });
+
+            } else {
+            	 alert( res.message);
+            }
+        },
+        error:function()
+        {
+            alert('请求出错');
+        },
+        complete:function()
+        {
+            // $('#tips').hide();
+        }
+	});
+    
+});
+var myapp = angular.module("createBookApp", [])
+myapp.controller("myCtrl", function ($scope, $http, $location) {
+   $scope.formData = {};
+   $scope.addBook = function () {
+		console.log($scope.formData)
+        $http.post('/addBook', $scope.formData)
+       .success(function (res) {
+           if (res && res.code === 0) {
+        	   location.reload();	
+           } else {
+        	   alert( res.message);
+           }
+       })
+   }
+   $scope.updateBook = function () {
+  			var formData = {
+  			      'id'   : $('input[name=id]').val(),
+  			      'name' : $('input[name=name]').val(),
+  			      'author' : $('input[name=author]').val(),
+  			 	  'pub' : $('input[name=pub]').val(),
+  			      'type' : $('#bookType').val(),
+  			      'stock' : $('input[name=stock]').val(),
+  			      'price' : $('input[name=price]').val()
+  			  };
+
+        $http.post('/updateBook', formData)
+       .success(function (res) {
+    	   $("#addBookModal").modal('show');
+           if (res && res.code === 0) {
+        	   location.reload();	
+           } else {
+        	   alert( res.message);
+           }
+       })
+      }
+}).controller("borrowCtrl", function ($scope, $http, $location) {
+   $scope.formData = {};
+   $scope.borrowBook = function () {
+	   $scope.formData.bookId = $("#borrowBookId").val();
+		console.log($scope.formData)
+		var urlStr = $("#borrowUrl").val();
+        $http.post(urlStr, $scope.formData)
+       .success(function (res) {
+           if (res && res.code === 0) {
+        	   $.confirm({
+          			title: false,
+          			content: '借书成功',
+          			backgroundDismiss: true,
+          			buttons: {
+          				cancel: {
+          					text: '确定',
+          					btnClass: 'waves-effect waves-button',
+          					action: function () {
+          						location.reload();
+          					}
+          				}
+          			}
+        	   });
+           } else {
+        	   alert( res.message);
+           }
+       })
+   }
+})
+
+var $table = $('#table');
+$(function() {
+	$(document).on('focus', 'input[type="text"]', function() {
+		$(this).parent().find('label').addClass('active');
+	}).on('focus', '#bookType', function() {
+		$(this).parent().find('label').addClass('active');
+	}).on('blur', 'input[type="text"]', function() {
+		if ($(this).val() == '') {
+			$(this).parent().find('label').removeClass('active');
+		}
+	}).on('blur', '#bookType', function() {
+		if ($(this).val() == '') {
+			$(this).parent().find('label').removeClass('active');
+		}
+	});
+	// bootstrap table初始化
+	$table.bootstrapTable({
+	    url: '/getAllBooks',
+		height: getHeight(),
+		paginationDetailHAlign:"right",
+		striped: true,
+		searchOnEnterKey: true,
+		showRefresh: true,
+		showToggle: true,
+		showColumns: true,
+		minimumCountColumns: 2,
+		showPaginationSwitch: true,
+		clickToSelect: true,
+		detailView: true,
+		detailFormatter: 'detailFormatter',
+		pagination: true,
+		paginationLoop: false,
+		classes: 'table table-hover table-no-bordered',
+		//sidePagination: 'server',
+		//silentSort: false,
+		smartDisplay: false,
+		idField: 'id',
+		sortName: 'id',
+		sortOrder: 'desc',
+		escape: true,
+		searchOnEnterKey: true,
+		idField: 'systemId',
+		maintainSelected: true,
+		toolbar: '#toolbar',
+		columns: [
+			{field: 'state', checkbox: true},
+			{field: 'id', title: '图书ID', sortable: true, halign: 'center',align: 'center'},
+			{field: 'name', title: '图书名称', sortable: true, halign: 'center',align: 'center'},
+			{field: 'author', title: '作者', sortable: true, halign: 'center',align: 'center'},
+			{field: 'pub', title: '出版社', sortable: true, halign: 'center',align: 'center'},
+			{field: 'type', title: '图书类别', sortable: true, halign: 'center',align: 'center'},
+			{field: 'stock', title: '库存', sortable: true, halign: 'center',align: 'center'},
+			{field: 'price', title: '价格', sortable: true, halign: 'center',align: 'center'},
+			{field: 'action', title: '操作', halign: 'center', align: 'center', formatter: 'actionFormatter', events: 'actionEvents', clickToSelect: false}
+		]
+	}).on('all.bs.table', function (e, name, args) {
+		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();  
+	});
+
+	var roleId = sessionStorage.getItem('roleId');
+	if(roleId == 1){
+		  $('#table').bootstrapTable('hideColumn', 'action');
+	}
+	
+});
+
+
+function actionFormatter(value, row, index) {
+    return [
+        '<button class="btn btn-info btn-sm borrow" style="background-color:#299e69" data-toggle="modal"  data-target="#borrowBookModal">借书</button>　',
+        '<button class="btn btn-info btn-sm return" style="background-color:#299e69" data-toggle="modal"  data-target="#borrowBookModal">还书</button>　'
+    ].join('');
+}
+
+
+window.actionEvents = {
+    'click .borrow': function (e, value, row, index) {
+    	$("#borrowBookId").val(row.id);
+    	$("#borrowUrl").val("/insertBookBorrowInfo");
+        //alert('You click like icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    },
+    'click .return': function (e, value, row, index) {
+    	$("#borrowBookId").val(row.id);
+    	$("#borrowUrl").val("/updateBookBorrowInfo");
+    	$("#timeDiv").remove();
+    	$("#bookModalLabel").text("图书归还");
+    	
+        //alert('You click edit icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    }
+};
+function detailFormatter(index, row) {
+	var html = [];
+	$.each(row, function (key, value) {
+		html.push('<p><b>' + key + ':</b> ' + value + '</p>');
+	});
+	return html.join('');
+}
+
+// 编辑
+function updateAction() {
+	var rows = $table.bootstrapTable('getSelections');
+
+	if (rows.length == 0) {
+		$.confirm({
+			title: false,
+			content: '请至少选择一条记录！',
+			backgroundDismiss: true,
+			buttons: {
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+		return;
+	}
+	for (var i in rows) {
+		id = rows[i].id;
+	}
+	$("#edit").attr("data-target","#addBookModal");
+	$.ajax({
+         url: "/getBookById?id=" + id,
+         type: "get",
+         success:function(res){ 
+         	if (res && res.code === 0) {
+         		$("#add").hide();
+         		$("#update").show();
+         		// 赋值
+         		console.log(res.data)
+                $("input[name='id']").val(res.data.id);
+                $("input[name='name']").val(res.data.name);
+                $("input[name='name']").parent().find('label').addClass('active');
+                $("input[name='author']").val(res.data.author);
+                $("input[name='author']").parent().find('label').addClass('active');
+                $("input[name='pub']").val(res.data.pub);
+                $("input[name='pub']").parent().find('label').addClass('active');
+                $("#bookType").val(res.data.type).select2();
+                $("#bookType").parent().find('label').addClass('active');
+                $("input[name='stock']").val(res.data.stock);
+                $("input[name='stock']").parent().find('label').addClass('active');
+                $("input[name='price']").val(res.data.price);
+                $("input[name='price']").parent().find('label').addClass('active');
+             } else {
+             	 alert( res.message);
+             }
+         },
+         error:function()
+         {
+             alert('请求出错');
+         },
+         complete:function()
+         {
+
+        	
+         }
+});
+
+	
+}
+// 删除
+function deleteAction() {
+	var rows = $table.bootstrapTable('getSelections');
+	if (rows.length == 0) {
+		$.confirm({
+			title: false,
+			content: '请至少选择一条记录！',
+			backgroundDismiss: true,
+			buttons: {
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+	} else {
+		$.confirm({
+			type: 'red',
+			animationSpeed: 300,
+			title: false,
+			content: '确认删除该图书吗？',
+			buttons: {
+				confirm: {
+					text: '确认',
+					btnClass: 'waves-effect waves-button',
+					action: function () {
+						var ids = new Array();
+						for (var i in rows) {
+							ids.push(rows[i].id);
+						}
+						 $.ajax({
+				                    url: "/deleteBookById?ids=" + ids,
+				                    type: "post",
+				                    success:function(res){ 
+				                    	if (res && res.code === 0) {
+				                    		$.confirm({
+				                    			title: false,
+				                    			content: '删除成功！',
+				                    			backgroundDismiss: true,
+				                    			buttons: {
+				                    				cancel: {
+				                    					text: '确定',
+				                    					btnClass: 'waves-effect waves-button'
+				                    				}
+				                    			}
+				                    		});
+				                 	 	    location.reload();
+						                } else {
+						                	 alert( res.message);
+						                }
+				                    },
+				                    error:function()
+				                    {
+				                        alert('请求出错');
+				                    },
+				                    complete:function()
+				                    {
+				                        // $('#tips').hide();
+				                    }
+					     });
+					}
+				},
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+	}
+}
+</script>
+</body>
+</html>

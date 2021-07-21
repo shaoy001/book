@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zwj.book.dao.BookMapper">
+	
+	<select id="findById" parameterType="string" resultType="book">
+		SELECT * FROM t_book 
+		 where id = #{value}
+	</select>
+
+	<select id="getBookCnt" parameterType="map"
+		resultType="int">
+			        SELECT count(1)
+			  FROM t_book b
+			<if test="type != null and type > 0 ">
+				and b.type = #{type}
+			</if>
+			<if test="name != null and name != ''">
+				and b.name like concat('%', #{name},'%')
+			</if>
+			<if test="author != null and author != ''">
+				and b.author like concat('%', #{author},'%')
+			</if>
+	</select>
+	
+	<select id="getBooks" parameterType="map" resultType="bookObj">
+	        SELECT b.id,
+	               b.name,
+	               b.author,
+	               b.pub,
+	               t.type_name as type,
+	               b.stock,
+	               b.price
+			  FROM t_book b
+			  inner join t_book_type t
+			  on t.id = b.type
+			<if test="type != null and type > 0 ">
+				and b.type = #{type}
+			</if>
+			<if test="name != null and name != ''">
+				and b.name like concat('%', #{name},'%')
+			</if>
+			<if test="author != null and author != ''">
+				and b.author like concat('%', #{author},'%')
+			</if>
+			<if test="order != null and order != ''">
+				order by ${order}
+			</if>
+			<if test="offset != null and pageSize != null and offset >= 0 and pageSize > 0">
+				limit ${offset}, ${pageSize}
+			</if>
+	</select>
+
+	<insert id="insertBook" useGeneratedKeys="true" keyProperty="id" parameterType="com.zwj.book.entity.Book">
+		insert into
+		t_book (name, author, pub, type, stock, price) 
+		values (#{name}, #{author}, #{pub}, #{type}, #{stock}, #{price})
+	</insert>
+	
+	<delete id="deleteBookByIds" parameterType="java.util.List">  
+	    delete from t_book where id IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>
+	</delete>
+	
+	<delete id="deleteBookById">  
+	    delete from t_book where id = #{id}
+	</delete>
+	
+	<update id="updateBook" parameterType="book">
+		UPDATE t_book
+		<set>
+			<if test="name != null and name != '' ">
+				name = #{name},
+			</if>
+			<if test="author != null and author != '' ">
+				author = #{author},
+			</if>
+			<if test="pub != null and pub != '' ">
+				pub = #{pub},
+			</if>
+			<if test="type != null and type > 0 ">
+				type = #{type},
+			</if>
+			<if test="stock != null ">
+				stock = #{stock},
+			</if>
+			<if test="price != null ">
+				price = #{price},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+</mapper>

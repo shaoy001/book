@@ -1,0 +1,70 @@
+﻿<!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>登录页</title>
+
+	<link href="resources/plugins/bootstrap-3.3.0/css/bootstrap.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/material-design-iconic-font-2.2.0/css/material-design-iconic-font.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/waves-0.7.5/waves.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/checkbix/css/checkbix.min.css" rel="stylesheet"/>
+	<link href="resources/css/login.css" rel="stylesheet"/>
+</head>
+<body  ng-app="myApp">
+<div id="login-window" >
+	<form name="myForm" ng-controller="myCtrl" ng-submit="toLogin()">
+		<div class="input-group m-b-20">
+			<span class="input-group-addon"><i class="zmdi zmdi-account"></i></span>
+			<div class="fg-line">
+				<input id="username"  ng-model="data.name" type="text" class="form-control" name="name" placeholder="帐号" required   >
+				<span style="color:red" ng-show="myForm.name.$dirty && myForm.name.$invalid">用户名是必须的。</span>
+			</div>
+		</div>
+			<div class="input-group m-b-20">
+			<span class="input-group-addon"><i class="zmdi zmdi-account"></i></span>
+			<div class="fg-line">
+				<input id="password"  ng-model="data.password" type="password" class="form-control" name="password" placeholder="密码" required   >
+				<span style="color:red" ng-show="myForm.password.$dirty && myForm.password.$invalid">密码是必须的。</span>
+			</div>
+		</div>
+		 <div class="input-group m-b-20 text-danger">
+	          <p id="msgError" style="display:none">{{msg}}</p>
+	      </div>
+		<div class="btn-container text-center">
+				<button type="submit" class="btn btn-info" style="width:100px;background-color:#36ab62;border-color:#36ab62;">登录</button>
+		</div>
+		<!--<a id="login-bt" ng-click="toLogin()"  ng-disabled="myForm.$invalid" class="waves-effect waves-button waves-float"><i class="zmdi zmdi-arrow-forward"></i></a> -->
+	  
+	</form>
+</div>
+<script src="resources/plugins/jquery.1.12.4.min.js"></script>
+<script src="resources/plugins/bootstrap-3.3.0/js/bootstrap.min.js"></script>
+<script src="resources/plugins/waves-0.7.5/waves.min.js"></script>
+<script src="resources/plugins/checkbix/js/checkbix.min.js"></script>
+<script src="resources/plugins/angular/angular-1-4-1.js"></script>
+<script type="text/javascript">
+	Checkbix.init();
+	 var myapp = angular.module("myApp", [])
+	 myapp.controller("myCtrl", function ($scope, $http, $location) {
+        $scope.toLogin = function () {
+            $http.post('/login', JSON.stringify($scope.data))
+            .success(function (res) {
+            	console.log("222 " + res )
+                if (res && res.code === 0) {
+                    // 跳转到列表页 默认是第一页
+                    sessionStorage.setItem("userId", res.data.id);
+                    sessionStorage.setItem("userName", res.data.name);
+                    sessionStorage.setItem("roleId", res.data.roleId);
+                    window.location.href = '/index.html' ; 
+                } else {
+                    $scope.msg = res.message;
+                	$("#msgError").show();
+                }
+            })
+        }
+    })
+</script>
+</body>
+</html>

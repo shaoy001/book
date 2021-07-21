@@ -1,0 +1,371 @@
+﻿<!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户增删改查</title>
+
+	<link href="resources/plugins/bootstrap-3.3.0/css/bootstrap.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/material-design-iconic-font-2.2.0/css/material-design-iconic-font.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/bootstrap-table-1.11.0/bootstrap-table.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/waves-0.7.5/waves.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/jquery-confirm/jquery-confirm.min.css" rel="stylesheet"/>
+	<link href="resources/plugins/select2/css/select2.min.css" rel="stylesheet"/>
+
+	<link href="resources/css/common.css" rel="stylesheet"/>
+</head>
+<body ng-app="createUserApp" >
+<div id="main">
+	<div id="toolbar" >
+	 	<button class="btn btn-info btn-sm" style="background-color:#299e69" data-toggle="modal"  data-target="#addUserModal">添加学生信息</button>
+	 	<button class="btn btn-info  btn-sm" style="background-color:#299e69" data-toggle="modal"  onclick="return updateAction()" id="edit">编辑学生信息</button>
+	 	<button class="btn btn-info btn-sm" style="background-color:#299e69"  onclick="deleteAction()">删除学生信息</button>
+
+	</div>
+	<table id="table"></table>
+</div>
+<!-- 新增 -->
+ <form name="myForm" action="" class="form-horizontal" role="form"  ng-controller="myCtrl" id="form_data" >
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                   	     用户信息
+                    </h4>
+                </div>
+                <div class="modal-body" style="padding:60px;">
+              		    <input name="id"  ng-model="formData.name" type="hidden" class="form-control" id="userId" >
+						<div class="form-group">
+							<label for="name">用户名</label>
+							
+							<input name="name"  ng-model="formData.name" type="text" class="form-control" id="name" required>
+						    <span style="color:red" ng-show="myForm.name.$dirty && myForm.name.$error.required">用户名是必须的。</span>
+						</div>
+						<div class="form-group" id="passwordGroup">
+							<label for="password">密码</label>
+							<input name="password" ng-model="formData.password" type="password" class="form-control" required>
+							<span style="color:red" ng-show="myForm.password.$dirty && myForm.password.$error.required">密码是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="sex">性别</label>
+							<div class="radio-inline" style="margin-left:60px;margin-top:6px;font-size:14px;">
+								<input name="sex"  ng-model="formData.sex" type="radio" checked="checked" value="1" id="radio1">男
+							</div>
+							<div class="radio-inline" style="margin-top:6px;font-size:14px;">
+								<input name="sex" ng-model="formData.sex" type="radio" value="0" id="radio2">女
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="age">年龄</label>
+							<input name="age"  ng-model="formData.age" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.age.$dirty && myForm.age.$error.required">年龄是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="pro">专业</label>
+							<input name="pro"  ng-model="formData.pro" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.pro.$dirty && myForm.pro.$error.required">专业是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="grade">班级</label>
+							<input name="grade"  ng-model="formData.grade" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.grade.$dirty && myForm.grade.$error.required">班级是必须的。</span>
+						</div>
+						<div class="form-group">
+							<label for="phone">电话号码</label>
+							<input name="phone"  ng-model="formData.phone" type="text" class="form-control" required>
+							<span style="color:red" ng-show="myForm.phone.$dirty && myForm.phone.$error.required">电话号码是必须的。</span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                 		<button type="submit" ng-click="addUser()" class="btn btn-primary"  ng-disabled="myForm.$invalid" id="add">提交 </button>
+                 		<button type="submit" ng-click="updateUser()" class="btn btn-primary" id="update" style="display:none">更新 </button>
+           		    </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    </form>
+<script src="resources/plugins/jquery.1.12.4.min.js"></script>
+<script src="resources/plugins/bootstrap-3.3.0/js/bootstrap.min.js"></script>
+<script src="resources/plugins/bootstrap-table-1.11.0/bootstrap-table.min.js"></script>
+<script src="resources/plugins/bootstrap-table-1.11.0/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="resources/plugins/waves-0.7.5/waves.min.js"></script>
+<script src="resources/plugins/jquery-confirm/jquery-confirm.min.js"></script>
+<script src="resources/plugins/select2/js/select2.min.js"></script>
+<script src="resources/js/common.js"></script>
+<script src="resources/plugins/angular/angular-1-4-1.js"></script>
+<script>
+$(function () { $('#addUserModal').on('hide.bs.modal', function () {
+        location.reload();
+    })
+});
+var myapp = angular.module("createUserApp", [])
+myapp.controller("myCtrl", function ($scope, $http, $location) {
+		$scope.formData = {};
+   		$scope.addUser = function () {
+			console.log($scope.formData)
+	   		console.log($scope)
+	        $http.post('/addUser', $scope.formData)
+	       .success(function (res) {
+	           if (res && res.code === 0) {
+	        	   location.reload();	
+	           } else {
+	               alert(res.message);
+	           }
+	       })
+       }
+   		$scope.updateUser = function () {
+   			var formData = {
+   			      'id'   : $('input[name=id]').val(),
+   			      'name' : $('input[name=name]').val(),
+   			      'sex' : $('input[name=sex]').val(),
+   			 	  'age' : $('input[name=age]').val(),
+   			      'pro' : $('input[name=pro]').val(),
+   			      'grade' : $('input[name=grade]').val(),
+   			      'phone' : $('input[name=phone]').val()
+   			  };
+			console.log(formData);
+	        $http.post('/updateUser', formData)
+	       .success(function (res) {
+	    	   $("#addUserModal").modal('show');
+	           if (res && res.code === 0) {
+	        	   location.reload();	
+	           } else {
+	           	   alert(res.message);
+	           }
+	       })
+       }
+})
+var $table = $('#table');
+$(function() {
+	$(document).on('focus', 'input[type="text"]', function() {
+		$(this).parent().find('label').addClass('active');
+	}).on('focus', 'input[type="password"]', function() {
+	    $(this).parent().find('label').addClass('active');
+	}).on('blur', 'input[type="text"]', function() {
+		if ($(this).val() == '') {
+			$(this).parent().find('label').removeClass('active');
+		}
+	}).on('blur', 'input[type="password"]', function () {
+	    if ($(this).val() == '') {
+	        $(this).parent().find('label').removeClass('active');
+	    }
+	});
+	// bootstrap table初始化
+	$table.bootstrapTable({
+	    url: '/getAllUsers',
+		height: getHeight(),
+		paginationDetailHAlign:"right",
+		striped: true,
+		searchOnEnterKey: true,
+		showRefresh: true,
+		showToggle: true,
+		showColumns: true,
+		minimumCountColumns: 2,
+		showPaginationSwitch: true,
+		clickToSelect: true,
+		detailView: true,
+		detailFormatter: 'detailFormatter',
+		pagination: true,
+		paginationLoop: false,
+		classes: 'table table-hover table-no-bordered',
+		//sidePagination: 'server',
+		//silentSort: false,
+		smartDisplay: false,
+		idField: 'id',
+		sortName: 'id',
+		sortOrder: 'desc',
+		escape: true,
+		searchOnEnterKey: true,
+		idField: 'systemId',
+		maintainSelected: true,
+		toolbar: '#toolbar',
+		columns: [
+			{field: 'state', checkbox: true},
+			{field: 'id', title: '用户ID', sortable: true, halign: 'center', align: 'center'},
+			{field: 'name', title: '用户名', sortable: true, halign: 'center', align: 'center'},
+			{field: 'sex', title: '性别', sortable: true, halign: 'center', align: 'center'},
+			{field: 'age', title: '年龄', sortable: true, halign: 'center', align: 'center'},
+			{field: 'pro', title: '专业', sortable: true, halign: 'center', align: 'center'},
+			{field: 'grade', title: '年级', sortable: true, halign: 'center', align: 'center'},
+			{field: 'phone', title: '手机', sortable: true, halign: 'center' , align: 'center'},
+		]
+	}).on('all.bs.table', function (e, name, args) {
+		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();  
+	});
+
+	
+	
+});
+
+
+window.actionEvents = {
+    'click .like': function (e, value, row, index) {
+        alert('You click like icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    },
+    'click .edit': function (e, value, row, index) {
+        alert('You click edit icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    },
+    'click .remove': function (e, value, row, index) {
+        alert('You click remove icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    }
+};
+function detailFormatter(index, row) {
+	var html = [];
+	$.each(row, function (key, value) {
+		html.push('<p><b>' + key + ':</b> ' + value + '</p>');
+	});
+	return html.join('');
+}
+
+// 编辑
+function updateAction() {
+	var rows = $table.bootstrapTable('getSelections');
+
+	if (rows.length == 0) {
+		$.confirm({
+			title: false,
+			content: '请至少选择一条记录！',
+			backgroundDismiss: true,
+			buttons: {
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+		return;
+	}
+	for (var i in rows) {
+		id = rows[i].id;
+	}
+	 $("#edit").attr("data-target","#addUserModal");
+	 $("#passwordGroup").remove();
+	 
+	$.ajax({
+         url: "/getUserById?userId=" + id,
+         type: "get",
+         success:function(res){ 
+         	if (res && res.code === 0) {
+         		$("#add").hide();
+         		$("#update").show();
+         		// 赋值
+         		console.log(res.data)
+                $("input[name='id']").val(res.data.id);
+         		$("input[name='name']").val(res.data.name);
+                $("input[name='name']").parent().find('label').addClass('active');
+                if(res.data.sex == 1){
+                	$("#radio1").prop("checked", true);
+                }else {
+                	$("#radio2").prop("checked", true);
+                }
+                $("input[name='sex']").parent().find('label').addClass('active');
+                $("input[name='age']").val(res.data.age);
+                $("input[name='age']").parent().find('label').addClass('active');
+                $("input[name='pro']").val(res.data.pro);
+                $("input[name='pro']").parent().find('label').addClass('active');
+                $("input[name='grade']").val(res.data.grade);
+                $("input[name='grade']").parent().find('label').addClass('active');
+                $("input[name='phone']").val(res.data.phone);
+                $("input[name='phone']").parent().find('label').addClass('active');
+                
+             } else {
+             	 alert( res.message);
+             }
+         	
+         },
+         error:function()
+         {
+             alert('请求出错');
+         },
+         complete:function()
+         {
+        	
+        	
+         }
+});
+
+	
+}
+// 删除
+function deleteAction() {
+	var rows = $table.bootstrapTable('getSelections');
+	if (rows.length == 0) {
+		$.confirm({
+			title: false,
+			content: '请至少选择一条记录！',
+			backgroundDismiss: true,
+			buttons: {
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+	} else {
+		$.confirm({
+			type: 'red',
+			animationSpeed: 300,
+			title: false,
+			content: '确认删除该用户吗？',
+			buttons: {
+				confirm: {
+					text: '确认',
+					btnClass: 'waves-effect waves-button',
+					action: function () {
+						var ids = new Array();
+						for (var i in rows) {
+							ids.push(rows[i].id);
+						}
+						 $.ajax({
+				                    url: "/deleteUserById?ids=" + ids,
+				                    type: "post",
+				                    success:function(res){ 
+				                    	if (res && res.code === 0) {
+				                    		$.confirm({
+				                    			title: false,
+				                    			content: '删除成功！',
+				                    			backgroundDismiss: true,
+				                    			buttons: {
+				                    				cancel: {
+				                    					text: '确定',
+				                    					btnClass: 'waves-effect waves-button'
+				                    				}
+				                    			}
+				                    		});
+				                 	 	    location.reload();
+						                } else {
+						                	 alert( res.message);
+						                }
+				                    },
+				                    error:function()
+				                    {
+				                        alert('请求出错');
+				                    },
+				                    complete:function()
+				                    {
+				                        // $('#tips').hide();
+				                    }
+					     });
+					}
+				},
+				cancel: {
+					text: '取消',
+					btnClass: 'waves-effect waves-button'
+				}
+			}
+		});
+	}
+}
+</script>
+</body>
+</html>

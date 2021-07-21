@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zwj.book.dao.BookTypeMapper">
+	
+	<select id="findById" parameterType="string" resultType="bookType">
+		SELECT id id,
+		       type_name typeName
+		 FROM t_book_type
+		 where id = #{value}
+	</select>
+
+	<select id="getBookTypeCnt" parameterType="map"
+		resultType="int">
+			        SELECT count(1)
+			  FROM t_book_type bt
+			<if test="name != null and name != ''">
+				and bt.type_name like concat('%', #{name},'%')
+			</if>
+	</select>
+	
+	<select id="getAllBookTypes" parameterType="map" resultType="bookType">
+	        SELECT bt.id id,
+	               bt.type_name typeName
+			  FROM t_book_type bt
+			<if test="name != null and name != ''">
+				and bt.type_name like concat('%', #{name},'%')
+			</if>
+			<if test="order != null and order != ''">
+				order by ${order}
+			</if>
+			<if test="offset != null and pageSize != null and offset >= 0 and pageSize > 0">
+				limit ${offset}, ${pageSize}
+			</if>
+	</select>
+	
+	<select id="getBookTypes"  resultType="bookType">
+	        SELECT bt.id id,
+	               bt.type_name typeName
+			  FROM t_book_type bt
+	</select>
+
+	<insert id="insertBookType" useGeneratedKeys="true" keyProperty="id" parameterType="com.zwj.book.entity.BookType">
+		insert into t_book_type (type_name) values (#{typeName})
+	</insert>
+	
+	<delete id="deleteBookTypeByIds" parameterType="java.util.List">  
+	    delete from t_book_type where id IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</delete>
+	
+	<delete id="deleteBookTypeById">  
+	    delete from t_book_type where id = #{id}
+	</delete>
+	
+	<update id="updateBookType" parameterType="bookType">
+		UPDATE t_book_type
+		<set>
+			<if test="typeName != null and typeName != '' ">
+				type_name = #{typeName},
+			</if>
+		</set>
+		<where>
+			<if test="id != null and id > 0">
+				and id = #{id}
+			</if>
+		</where>
+	</update>
+	
+</mapper>

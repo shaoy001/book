@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zwj.book.dao.BookBorrowMapper">
+	
+	<select id="getBookBorrowInfos" parameterType="map" resultType="bookBorrowInfo">
+	      select 
+			   b.name bookName,
+			   u.name userName,
+			   bb.borrow_date borrowDate,
+			   bb.borrow_time borrowTime,
+			   bb.return_date returnDate
+			 from t_book_borrow bb
+			 inner join t_book b
+			 on b.id = bb.user_id
+			 inner join t_user u
+			 on u.id = bb.book_id
+			<if test="userId != null and userId > 0 ">
+				and bb.user_id = #{userId}
+			</if>
+			<if test="order != null and order != ''">
+				order by ${order}
+			</if>
+			<if test="offset != null and pageSize != null and offset >= 0 and pageSize > 0">
+				limit ${offset}, ${pageSize}
+			</if>
+	</select>
+	
+	<select id="getBorrowInfosByUserId" parameterType="string" resultType="bookBorrowInfo">
+	      select 
+			   b.name bookName,
+			   u.name userName,
+			   bb.borrow_date borrowDate,
+			   bb.borrow_time borrowTime,
+			   bb.return_date returnDate
+			 from t_book_borrow bb
+			 inner join t_book b
+			 on b.id = bb.user_id
+			 inner join t_user u
+			 on u.id = bb.book_id
+			 where bb.return_date is null and bb.user_id = #{userId}
+	</select>
+
+	<update id="updateBookBorrowInfo" parameterType="bookBorrowInfo">
+		UPDATE t_book_borrow
+		<set>
+			<if test="returnDate != null ">
+				return_date = #{returnDate},
+			</if>
+			<if test="borrowTime != null and borrowTime > 0 ">
+				borrow_time = #{borrowTime},
+			</if>
+		</set>
+		where user_id=#{userId} and book_id=#{bookId}
+	</update>
+	
+	<insert id="insertBookBorrowInfo" parameterType="bookBorrowInfo">
+		insert into
+		t_book_borrow (user_id, book_id, borrow_date, borrow_time) 
+		values (#{userId}, #{bookId}, #{borrowDate}, #{borrowTime})
+	</insert>
+	
+	
+	<select id="checkBookBorrrow" parameterType="map"
+		resultType="int">
+			        SELECT count(1)
+			  FROM t_book_borrow bb
+			 where bb.return_date is null and bb.user_id = #{userId} and bb.book_id = #{bookId} 
+	</select>
+</mapper>

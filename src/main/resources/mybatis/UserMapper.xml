@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zwj.book.dao.UserMapper">
+	<select id="findByName" parameterType="string" resultType="user">
+		SELECT 	id, 
+		NAME, 
+		PASSWORD,
+		roleId
+		FROM 
+		t_user 
+		 where name = #{value}
+	</select>
+	
+	<select id="findById" parameterType="string" resultType="user">
+		SELECT 	* FROM t_user 
+		 where id = #{value}
+	</select>
+
+	<select id="getUserCnt" parameterType="map"
+		resultType="int">
+			        SELECT count(1)
+			  FROM t_user u
+			<if test="age != null and age > 0 ">
+				and u.age = #{age}
+			</if>
+			<if test="pro != null and pro != ''">
+				and u.pro like concat('%', #{pro},'%')
+			</if>
+			<if test="grade != null and grade != ''">
+				and u.grade like concat('%', #{grade},'%')
+			</if>
+	</select>
+	
+	<select id="getUsers" parameterType="map"
+		resultType="com.zwj.book.entity.User">
+	        SELECT u.*
+			  FROM t_user u
+			  inner join t_role r
+			  on u.roleId = r.id
+			  where  r.permission = 'student'
+			<if test="age != null and age > 0 ">
+				and u.age = #{age}
+			</if>
+			<if test="pro != null and pro != ''">
+				and u.pro like concat('%', #{pro},'%')
+			</if>
+			<if test="grade != null and grade != ''">
+				and u.grade like concat('%', #{grade},'%')
+			</if>
+			<if test="order != null and order != ''">
+				order by ${order}
+			</if>
+			<if test="offset != null and pageSize != null and offset >= 0 and pageSize > 0">
+				limit ${offset}, ${pageSize}
+			</if>
+	</select>
+	
+	<select id="getUsersSelect" parameterType="map"
+		resultType="com.zwj.book.entity.User">
+	        SELECT u.*
+			  FROM t_user u
+			  where u.roleId = 1
+	</select>
+
+	<insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.zwj.book.entity.User">
+		insert into
+		t_user (name, password, sex, age, pro, grade, phone) 
+		values (#{name}, #{password}, #{sex}, #{age}, #{pro}, #{grade}, #{phone})
+	</insert>
+	
+	<delete id="deleteUserByIds" parameterType="java.util.List">  
+	    delete from t_user where id IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>
+	</delete>
+	
+	<delete id="deleteUserById">  
+	    delete from t_user where id = #{id}
+	</delete>
+	
+	<update id="updateUser" parameterType="com.zwj.book.entity.User">
+		UPDATE t_user
+		<set>
+			<if test="name != null and name != '' ">
+				name = #{name},
+			</if>
+				<if test="password != null and password != '' ">
+				password = #{password},
+			</if>
+
+			<if test="sex != null ">
+				sex = #{sex},
+			</if>
+
+			<if test="age != null and age > 0 ">
+				age = #{age},
+			</if>
+
+			<if test="pro != null and pro != '' ">
+				pro = #{pro},
+			</if>
+	
+			<if test="grade != null and grade != '' ">
+				grade = #{grade},
+			</if>
+
+			<if test="phone != null and phone != '' ">
+				phone = #{phone},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<select id="findPermissionByUserId" parameterType="int" resultType="string">
+		SELECT p.permission
+	    FROM t_user u
+	        INNER JOIN t_user_role ur ON u.id = ur.user_id
+	        INNER JOIN t_role_permission rp ON ur.role_id = rp.role_id
+	        INNER JOIN t_permission p ON rp.permission_id = p.id
+      	WHERE u.id = #{value};
+	</select>
+	
+</mapper>
